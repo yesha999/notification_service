@@ -1,3 +1,5 @@
+import datetime
+
 import pytz as pytz
 from django.core.validators import RegexValidator
 from django.db import models
@@ -50,6 +52,8 @@ class Mailing(DatesModelMixin):
     # В ТЗ не совсем так, но на мой взгляд, так должно быть лучше
     tag_filter = models.CharField(verbose_name="Фильтр клиентов по тегу", max_length=100, null=True, blank=True,
                                   default=None)
+    time_interval_start = models.TimeField(verbose_name="Начало временного интервала", default=datetime.time(00, 00))
+    time_interval_end = models.TimeField(verbose_name="Конец временного интервала", default=datetime.time(23, 59, 59))
 
 
 class Client(DatesModelMixin):

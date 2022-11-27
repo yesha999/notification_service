@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.django_db
-class TestCreate:
+class TestClientCreate:
     def test_correct_create(self, client):
         data = {"phone": 79994567890, "tag": "some_tag", "timezone": "UTC"}
         post_response = client.post('/mailing/client/create', data=data)

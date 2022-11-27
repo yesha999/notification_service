@@ -14,16 +14,13 @@ from mailing.serializers import ClientCreateSerializer, ClientSerializer, Mailin
     MailingListSerializer, MailingSerializer
 
 
+@extend_schema_view(
+    post=extend_schema(
+        description="Создает клиента рассылки",
+        summary="Создает клиента рассылки"))
 class ClientCreateView(CreateAPIView):
     model = Client
     serializer_class = ClientCreateSerializer
-
-    @extend_schema(
-        description="Создает клиента рассылки",
-        summary="Создает клиента рассылки"
-    )
-    def post(self, request, *args, **kwargs):
-        return super().post(request, *args, **kwargs)
 
 
 @extend_schema_view(
@@ -51,7 +48,7 @@ class MailingCreateView(CreateAPIView):
 
     def perform_create(self, serializer):
         obj = serializer.save()
-        return obj.id
+        return obj.id  # Добавим возвращение, чтобы получить id создаваемого объекта
 
     @extend_schema(
         description="Создаем рассылку, если рассылка создана на ненаступившую дату,"
@@ -73,6 +70,17 @@ class MailingCreateView(CreateAPIView):
                 raise ValidationError("Ошибка! Время начала рассылки позже, чем время ее окончания")
             except ValidationError as e:
                 return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+        time_interval_start = datetime.datetime.strptime(
+            serializer.data.get("time_interval_start"), "%H:%M:%S").time()
+        time_interval_end = datetime.datetime.strptime(
+            serializer.data.get("time_interval_end"), "%H:%M:%S").time()
+        if time_interval_start > time_interval_end:
+            try:
+                raise ValidationError("Ошибка! Задан некорректный временной интервал рассылки")
+            except ValidationError as e:
+                return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
         if start_date <= datetime.datetime.now():
             tasks.prepare_mailing.delay(serializer.data, end)  # Здесь мы не указываем id задачи,
             # потому что рассылка будет запущена сразу же, ее нельзя будет изменить
