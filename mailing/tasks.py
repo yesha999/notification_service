@@ -6,7 +6,7 @@ from celery import shared_task
 from django.db import transaction
 from django.utils import timezone
 
-from mailing.models import Message, Client, Mailing
+from mailing.models import Message, Client
 from notification_service.settings import env
 
 
